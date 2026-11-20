@@ -16,7 +16,12 @@ docs/windows-to-linux.md                   Table: Windows PowerShell 5.1 feature
 docs/security-windows-to-linux.md          Table: Windows security features (Secure Boot, BlackLotus, BitLocker,
                                            Defender, AppLocker, ...) and what to use on Debian.
 PSScriptAnalyzerSettings.psd1              Settings to check a script for things that will not work on Linux.
+pxe/setup-pxe-server.sh                    Bash. Turns a Debian 13 machine into a network install server.
+pxe/*.conf, autoexec.ipxe, preseed.cfg     Its configuration: proxy DHCP/TFTP, iPXE menu, HTTP, installer answers.
+docs/network-install.md                    How to install a PC: F12 -> iPXE -> Debian installer -> Ansible.
 ```
+
+To (re)install PCs over the network, see [docs/network-install.md](docs/network-install.md).
 
 ## Quick start
 
