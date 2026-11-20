@@ -1,0 +1,63 @@
+# Install the application pool (apps.yml) on Debian desktops.
+# Groups per machine: inventory variable app_groups, for example:  pc1 app_groups='["base","office"]'
+# Run: ansible-playbook install-apps.yml          (all machines)
+#      ansible-playbook install-apps.yml -l pc1   (one machine)
+- name: Application pool
+  hosts: linux
+  become: true
+  vars_files: [apps.yml]
+  vars:
+    packages: "{{ app_groups | default(['base']) | map('extract', app_pool) | flatten | unique }}"
+  tasks:
+    # Edge and VS Code try to add their own copy of the repository during install.
+    # Two copies with different keys make "apt update" fail, so we tell them not to.
+    - name: Edge - do not add a second repository
+      ansible.builtin.copy:
+        dest: /etc/default/microsoft-edge
+        content: "repo_add_once=\"false\"\nrepo_reenable_on_distupgrade=\"false\"\n"
+        mode: "0644"
+    - name: VS Code - do not add a second repository
+      ansible.builtin.debconf:
+        name: code
+        question: code/add-microsoft-repo
+        vtype: boolean
+        value: "false"
+
+    - name: Python library that the repository module needs
+      ansible.builtin.apt:
+        name: python3-debian
+        cache_valid_time: 3600
+
+    - name: Add vendor repositories that this machine needs
+      ansible.builtin.deb822_repository:
+        name: "{{ item.key }}"
+        uris: "{{ item.value.uris }}"
+        suites: stable
+        components: main
+        architectures: amd64
+        signed_by: "{{ item.value.signed_by }}"
+      loop: "{{ app_repos | dict2items }}"
+      when: item.value.packages | intersect(packages) | length > 0
+
+    - name: Update the package lists
+      ansible.builtin.apt:
+        update_cache: true
+      changed_when: false   # refreshing the lists is not a change to the machine
+
+    - name: Check the disk budget (apt reports the size before anything is installed)
+      ansible.builtin.script: >-
+        scripts/Test-AppBudget.ps1 -BudgetGB {{ app_disk_budget_gb }} -MinFreeGB {{ app_min_free_gb }}
+        {{ packages | join(' ') }}
+      args:
+        executable: pwsh
+      register: budget
+      changed_when: false
+      failed_when: budget.rc != 0
+
+    - name: Install the apps
+      ansible.builtin.apt:
+        name: "{{ packages }}"
+
+    - name: Show budget check
+      ansible.builtin.debug:
+        msg: "{{ budget.stdout | from_json }}"

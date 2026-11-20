@@ -1,0 +1,41 @@
+# Application pool. Each machine gets the groups in its inventory variable "app_groups"
+# (default: base). Add or remove apps here; install-apps.yml does the rest.
+# Package names are Debian 13 names. Search: apt-cache search <word>
+
+app_disk_budget_gb: 100   # most the pool may use (256 GB disk: system + user data need the rest)
+app_min_free_gb: 20       # always keep this much free on / after installing
+
+app_pool:
+  base:                      # every desktop
+    - firefox-esr
+    - microsoft-edge-stable  # Microsoft 365 web apps and Teams (there is no native Linux Teams client)
+    - 7zip
+    - vlc
+  office:
+    - libreoffice
+    - libreoffice-gnome      # GNOME look and file dialogs
+    - evolution-ews          # Exchange / Microsoft 365 mail and calendar (Outlook replacement)
+    - keepassxc
+  admin:                     # IT staff
+    - remmina                # RDP to Windows servers
+    - remmina-plugin-rdp
+    - wireshark
+    - nmap
+    - filezilla
+  dev:
+    - code                   # Visual Studio Code
+    - dotnet-sdk-8.0
+
+# Vendor apt repositories for packages that Debian does not ship.
+# A repository is only added on machines that get one of its packages.
+# The key is the file name (/etc/apt/sources.list.d/<key>.sources). Keep "microsoft-edge" and "vscode":
+# they match the vendors' own file names, so Edge and VS Code do not add a second copy.
+app_repos:
+  microsoft-edge:
+    uris: https://packages.microsoft.com/repos/edge
+    signed_by: https://packages.microsoft.com/keys/microsoft.asc
+    packages: [microsoft-edge-stable]
+  vscode:
+    uris: https://packages.microsoft.com/repos/code
+    signed_by: https://packages.microsoft.com/keys/microsoft.asc
+    packages: [code]

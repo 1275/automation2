@@ -11,6 +11,9 @@ orchestration/site.yml                     Ansible playbook. Bootstraps every no
 orchestration/inventory.ini                List of the nodes to manage.
 orchestration/ansible.cfg                  Ansible settings for this folder.
 orchestration/scripts/Get-SystemReport.ps1     Example task: OS, PowerShell version, uptime, free disk.
+orchestration/apps.yml                     The application pool: app groups, vendor repositories, disk budget.
+orchestration/install-apps.yml             Ansible playbook. Installs each machine's app groups.
+orchestration/scripts/Test-AppBudget.ps1   Disk budget check before installing apps (100 GB on 256 GB disks).
 orchestration/scripts/Get-SecurityPosture.ps1  Secure Boot, 2023 certificates, SBAT, lockdown, TPM, LUKS, patches.
 docs/windows-to-linux.md                   Table: Windows PowerShell 5.1 features and what to use on Debian.
 docs/security-windows-to-linux.md          Table: Windows security features (Secure Boot, BlackLotus, BitLocker,
@@ -22,6 +25,7 @@ docs/network-install.md                    How to install a PC: F12 -> iPXE -> D
 ```
 
 To (re)install PCs over the network, see [docs/network-install.md](docs/network-install.md).
+To install apps, see [docs/application-pool.md](docs/application-pool.md).
 
 ## Quick start
 
