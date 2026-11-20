@@ -11,6 +11,8 @@ orchestration/site.yml             Ansible playbook. Bootstraps every node, then
 orchestration/inventory.ini        List of the nodes to manage.
 orchestration/ansible.cfg          Ansible settings for this folder.
 orchestration/scripts/*.ps1        PowerShell scripts that the playbook runs on the nodes.
+docs/windows-to-linux.md           Table: Windows PowerShell 5.1 features and what to use on Debian instead.
+PSScriptAnalyzerSettings.psd1      Settings to check a script for things that will not work on Linux.
 ```
 
 ## Quick start
@@ -79,7 +81,8 @@ do it?". Write new code only if all three answers are no. In practice:
 ## Suggested next steps
 
 1. Test on a real Debian 13 desktop VM and a second node over SSH.
-2. Move one or two real PowerShell scripts from Windows into `scripts/` and note what needed changes.
+2. Move one or two real PowerShell scripts from Windows into `scripts/`. Check them first with
+   PSScriptAnalyzer and use [docs/windows-to-linux.md](docs/windows-to-linux.md) for the fixes.
 3. Add a `[windows]` group to the inventory and try one task over WinRM.
 4. Decide on where secrets live (Ansible Vault or our existing vault) before any real credentials are used.
 
