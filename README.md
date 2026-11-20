@@ -120,5 +120,8 @@ do it?". Write new code only if all three answers are no. In practice:
   On the Ubuntu 24.04 container the `apt` task fails because of a Python mismatch in that container
   (not a playbook problem).
 - Both PowerShell scripts on Debian 13 and Ubuntu 24.04, and PSScriptAnalyzer on both scripts (no findings).
-- **Not tested:** real hardware. The containers have no UEFI firmware, TPM, systemd or `ip` command, so
-  the Secure Boot, TPM and some table rows are checked against documentation and package contents only.
+- Network install (`pxe/`): a full run from F12-style network boot to `site.yml`, in a UEFI virtual machine
+  with Secure Boot on. Details in [docs/network-install.md](docs/network-install.md#what-was-tested).
+  That run also tested `site.yml` over SSH and `Get-SecurityPosture.ps1` with real UEFI and Secure Boot values.
+- **Not tested:** physical hardware and a TPM. Some table rows in the docs are checked against
+  documentation and package contents only.

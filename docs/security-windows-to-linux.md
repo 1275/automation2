@@ -29,8 +29,18 @@ reports the most important values as JSON. `ansible-playbook site.yml` runs it o
 | `OpenSecurityFixes` | `0` | Packages with a Debian security fix that is not installed. `null` = could not ask the Debian security tracker. |
 
 `null` means "not available" (no UEFI, no TPM, tool missing, or no network). It never means "OK".
-Tested on Debian 13 and Ubuntu 24.04, but only in containers without UEFI firmware. **The UEFI fields
-are not yet tested on real hardware.** Do that first on the POC desktop.
+Tested on a Debian 13 virtual machine with UEFI firmware and Secure Boot on (installed through the
+network install, see [network-install.md](network-install.md)). Result:
+
+```
+SecureBoot: true            KernelLockdown: integrity      AppArmor: true
+Db_MicrosoftUefiCA2023: true   Db_WindowsUefiCA2023: true  Kek_2023: true
+SbatRevocations: sbat,1,2025021800;shim,4;grub,5           RebootNeeded: false
+Tpm: null (the VM had no TPM)
+```
+
+**Not yet tested on a physical PC.** Do that first on the POC desktop: real firmware can differ, for
+example a missing 2023 certificate or KEK.
 
 ## Secure Boot
 

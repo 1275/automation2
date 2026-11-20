@@ -119,6 +119,29 @@ with `mokutil --db` on a working Debian PC of the same model, or update its firm
 - **UEFI HTTP boot** (without PXE/TFTP) and **IPv6 network boot**.
 - **ARM PCs.** iPXE and Debian both have arm64 files; the dnsmasq line for them is not written yet.
 
+## What was tested
+
+A full run in a test lab (QEMU virtual machine, no KVM):
+
+- PXE server: `setup-pxe-server.sh` on Debian 13.7, unchanged. A second dnsmasq in another network namespace
+  acted as the "company DHCP server".
+- Client: UEFI firmware (OVMF) with Microsoft keys and **Secure Boot on**, empty 20 GB disk.
+- Result: firmware PXE → iPXE shim → `ipxe.efi` → menu (default "local disk", countdown works) → "Install"
+  → Debian shim → installer kernel → preseed → no questions asked → LVM install → reboot from disk with
+  Secure Boot on → SSH with the key as `ansible`, sudo works, root and `ansible` passwords locked →
+  `ansible-playbook site.yml` passes. Install time in the slow emulator: about 50 minutes; on real
+  hardware expect 10-20 minutes depending on the network.
+- Test-only changes: the VM reached the Debian mirror through a small HTTP forwarder (the lab has no direct
+  internet), set with `mirror/http/proxy` in the served preseed copy. PowerShell was copied to the VM by hand
+  for the same reason.
+
+Problems found by the test and fixed: wrong field order when reading `ip route`, nginx failing on a
+server without IPv6, and Ansible's terminal (TTY) making pwsh add escape codes to the JSON output.
+
+**Not tested yet:** a real PC (for example a ThinkStation) and real network equipment. On newer Lenovo
+models, check the BIOS setting **"Allow Microsoft 3rd Party UEFI CA"**: if it is off, the firmware blocks
+both shims. Turn it on; keep Secure Boot on.
+
 ## Sources
 
 - iPXE: [UEFI Secure Boot](https://ipxe.org/secboot), [`shim` command](https://ipxe.org/cmd/shim), [releases](https://github.com/ipxe/ipxe/releases)
