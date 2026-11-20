@@ -1,0 +1,20 @@
+# Orchestrate all Debian nodes: bootstrap them, then run PowerShell tasks on them.
+- name: Debian baseline
+  hosts: linux
+  become: true
+  tasks:
+    - name: Bootstrap PowerShell 7 and tools (reuses bootstrap/install.sh)
+      ansible.builtin.script: ../bootstrap/install.sh
+      args:
+        creates: /usr/bin/pwsh
+
+    - name: Run a PowerShell script on the node
+      ansible.builtin.script: scripts/Get-SystemReport.ps1
+      args:
+        executable: pwsh
+      register: report
+      changed_when: false
+
+    - name: Show result
+      ansible.builtin.debug:
+        msg: "{{ report.stdout | from_json }}"
