@@ -1,0 +1,34 @@
+#!ipxe
+# Network boot menu (written by setup-pxe-server.sh). iPXE runs this file by itself after it starts.
+# The default is the local disk, so a PC that has network boot first in its boot order is never wiped
+# by accident. Installing needs a person to choose it.
+
+set server @SERVER_IP@
+set base http://${server}/debian-installer/amd64
+
+menu Network boot - ${mac} - Secure Boot ${efi/SecureBoot} (01 = on)
+item --gap Debian 13
+item install   Install Debian 13 automatically - ERASES THE WHOLE DISK
+item --gap Other
+item local     Boot from local disk
+item shell     iPXE shell
+choose --default local --timeout 30000 target || goto local
+goto ${target}
+
+:install
+# Hostname from the MAC address, so every machine gets a unique name (deb-001122aabbcc).
+kernel ${base}/linux initrd=initrd.gz auto=true priority=critical url=http://${server}/preseed.cfg netcfg/hostname=deb-${mac:hexraw} --- quiet
+initrd ${base}/initrd.gz
+# With Secure Boot on, boot the Debian kernel through Debian's signed shim. Does nothing when Secure Boot is off.
+shim ${base}/bootnetx64.efi
+boot || goto failed
+
+:local
+exit
+
+:shell
+shell
+
+:failed
+echo Boot failed. Type "exit" to boot from the local disk.
+shell

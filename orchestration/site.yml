@@ -1,0 +1,27 @@
+# Orchestrate all Debian nodes: bootstrap them, then run PowerShell tasks on them.
+- name: Debian baseline
+  hosts: linux
+  become: true
+  tasks:
+    - name: Bootstrap PowerShell 7 and tools (reuses bootstrap/install.sh)
+      ansible.builtin.script: ../bootstrap/install.sh
+      args:
+        creates: /usr/bin/pwsh
+
+    - name: Install tools used by Get-SecurityPosture.ps1
+      ansible.builtin.apt:
+        name: [mokutil, needrestart, debsecan]
+        install_recommends: false   # debsecan recommends a mail server (postfix/exim); we do not want that
+        cache_valid_time: 3600
+
+    - name: Run PowerShell scripts on the node
+      ansible.builtin.script: "scripts/{{ item }}"
+      args:
+        executable: pwsh
+      loop: [Get-SystemReport.ps1, Get-SecurityPosture.ps1]
+      register: reports
+      changed_when: false
+
+    - name: Show results
+      ansible.builtin.debug:
+        msg: "{{ reports.results | map(attribute='stdout') | map('from_json') }}"
