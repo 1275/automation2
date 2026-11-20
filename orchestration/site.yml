@@ -8,13 +8,20 @@
       args:
         creates: /usr/bin/pwsh
 
-    - name: Run a PowerShell script on the node
-      ansible.builtin.script: scripts/Get-SystemReport.ps1
+    - name: Install tools used by Get-SecurityPosture.ps1
+      ansible.builtin.apt:
+        name: [mokutil, needrestart, debsecan]
+        install_recommends: false   # debsecan recommends a mail server (postfix/exim); we do not want that
+        cache_valid_time: 3600
+
+    - name: Run PowerShell scripts on the node
+      ansible.builtin.script: "scripts/{{ item }}"
       args:
         executable: pwsh
-      register: report
+      loop: [Get-SystemReport.ps1, Get-SecurityPosture.ps1]
+      register: reports
       changed_when: false
 
-    - name: Show result
+    - name: Show results
       ansible.builtin.debug:
-        msg: "{{ report.stdout | from_json }}"
+        msg: "{{ reports.results | map(attribute='stdout') | map('from_json') }}"
